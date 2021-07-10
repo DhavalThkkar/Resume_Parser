@@ -9,7 +9,7 @@ import pandas as pd
 import pytesseract
 import os
 import glob
-import nltk
+import texthero as hero
 
 from pyresparser import ResumeParser
 from pyresparser.utils import extract_text
@@ -17,18 +17,24 @@ from pyresparser.utils import extract_text
 from PIL import Image
 from pdf2image import convert_from_path
 
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
 # System path variables
 pytesseract.pytesseract.tesseract_cmd=r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 poppler_path=r'C:\Users\MSI\Downloads\Release-21.03.0\poppler-21.03.0\Library\bin'
 
 class document_processing:
     
-    def __init__(self, resume, skills):
+    def __init__(self, resume, skills, job_desc):
         
         skills = pd.read_csv('skills.csv')
+        with open('Job_description.txt', 'r') as file:
+            job_desc = file.read()
         
         self.resume = resume
         self.skills = skills
+        self.job_desc = job_desc
         
     def extract_resume(self):
         
@@ -37,11 +43,10 @@ class document_processing:
         extension = filepath.split('.')[-1]
         extension = '.'+extension
         
-        resume_ner_back = ResumeParser(filepath, file_path_txt="out_text.txt").get_extracted_data()
-        resume_ner_main = ResumeParser(filepath).get_extracted_data()
+        resume_ner = ResumeParser(filepath).get_extracted_data()
         resume_txt = extract_text(filepath, extension=extension)
         
-        return resume_ner_back, resume_ner_main, resume_txt
+        return resume_ner, resume_txt
         
     def ocr_text(self):
         
@@ -107,7 +112,7 @@ class document_processing:
         
         return un_df
     
-    def find_match(source, match):
+    def find_match(self, source, match):
         
         # Remove the null values 
         match.dropna(inplace=True)
@@ -135,6 +140,25 @@ class document_processing:
         
         return score, lst_skills
     
+    def fill_data(self, source, target, column):
+        
+        source.loc[0, column] = str(target[column])
+        
+        return source   
+    
+    def resume_cosine_score(self, text):
+        
+        jd_txt = self.job_desc
+        
+        
+        text_list = [text, jd_txt]
+        cv = CountVectorizer()
+        count_matrix = cv.fit_transform(text_list)
+        match_percentage = cosine_similarity(count_matrix)[0][1] * 100
+        match_percentage = round(match_percentage, 2)
+
+        return match_percentage
+    
     def skills_match(self):
         
         # Load the skills data file
@@ -148,17 +172,37 @@ class document_processing:
         # Main dataframe for manipulation
         main_df = pd.DataFrame(cleaned_words[0].split(), columns = ['text'])
         
+        # Load data from pyresparser
+        pyres_data, pyres_text = self.extract_resume()
+        
         # Details
-        columns = ['filename', 'name', 'phone', 'email', 'companies',
-                   'colleges', 'experience', 'skills',
+        columns = ['filename', 'name', 'mobile_number', 'email', 'company_names',
+                   'college_name', 'experience', 'skills',
                    'primary_score', 'primary_match',
                    'secondary_score', 'secondary_match',
                    'education_score', 'experience_score', 
-                   'other_skills_match', 'document_similarity']
+                   'resume_pages', 'document_similarity']
         details = pd.DataFrame(columns = columns)
         
         # Add the primary match and score
-        pri_score, pri_match = find_match(main_df, skills[['Primary']])
-        sec_score, sec_match = find_match(main_df, skills[['Secondary']])
+        pri_score, pri_match = self.find_match(main_df, skills[['Primary']])
+        sec_score, sec_match = self.find_match(main_df, skills[['Secondary']])
         
+        # Add details in a dataframe
+        details.loc[0, 'filename'] = self.resume
+        details = self.fill_data(details, pyres_data, 'name')
+        details = self.fill_data(details, pyres_data, 'mobile_number')
+        details = self.fill_data(details, pyres_data, 'email')
+        details = self.fill_data(details, pyres_data, 'company_names')
+        details = self.fill_data(details, pyres_data, 'college_name')
+        details = self.fill_data(details, pyres_data, 'experience')
+        details = self.fill_data(details, pyres_data, 'skills')
+        details = self.fill_data(details, pyres_data, 'no_of_pages')
+        details.loc[0, 'primary_score'] = pri_score
+        details.loc[0, 'primary_match'] = str(pri_match)
+        details.loc[0, 'secondary_score'] = sec_score
+        details.loc[0, 'secondary_match'] = str(sec_match)
         
+        return details
+        
+    
