@@ -1,0 +1,14 @@
+FROM continuumio/anaconda3:latest
+LABEL Author, Dhaval Thakkar
+
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+COPY . $APP_HOME
+
+RUN conda env create --file environment.yaml
+RUN echo "source activate resume_parser" &gt; ~/.bashrc
+ENV PATH /opt/conda/envs/resume_parser/bin:$PATH
+
+SHELL ["conda", "run", "--name", "app", "/bin/bash", "-c"]
+
+ENTRYPOINT ["conda", "run", "--name", "app", "python", "main.py"]
