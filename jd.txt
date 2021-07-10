@@ -1,0 +1,30 @@
+About the job
+
+Borneo.io is building the next-generation ML Powered data privacy platform for hyper-growth companies. The Data Scientist role is at the core of Borneo’s engineering. You will be building models, manipulating big data, and working with APIs essential to the Borneo product.
+We are growing fast and expanding our data science family with outstanding minds and diverse personalities.
+
+As a Data Scientist at Borneo, you’ll have the opportunity to:
+
+    Work with some of the largest data sets used by some of the leading global technology companies
+    Help build a predictive product and inform features at the ground level.
+    Lead the way in leveraging unstructured data for predictive modeling, anomaly detection, and drive privacy compliance.
+
+Responsibilities:
+
+    Identify, automate data collection processes
+    Dive into complex data sets to analyze trends and identify opportunities for improvement.
+    Build predictive models and machine-learning algorithms
+    Present information using data visualization techniques
+    Propose solutions and strategies to business challenges
+    Have a data-driven decision making approach
+
+Requirements:
+
+    5-8 years of relevant experience, B2B startup experience preferred
+    Proven experience as a Data Scientist or Data Analyst
+    Experience in building ML models and deploying them to production
+    A solid understanding of data science fundamentals, statistical techniques, NLP algorithms
+    Understand research papers and create quick proof of concept relevant to the product
+    Expert in implementing quick prototypes that shows business value
+    Experience with programming languages such as NodeJs /Python/JavaScript: Cloud technologies: AWS/GCP/K8 etc.
+

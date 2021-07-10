@@ -87,5 +87,8 @@ class document_processing:
         
             count+=1
         
+        with open('out_text.txt', 'w') as f:
+            f.write(text_op)
+        
         return text_op, count
     
