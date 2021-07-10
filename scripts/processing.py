@@ -6,6 +6,7 @@ Created on Sat Jul 10 16:24:45 2021
 """
 
 import pandas as pd
+import numpy as np
 import pytesseract
 import os
 import glob
@@ -149,7 +150,9 @@ class document_processing:
     def resume_cosine_score(self, text):
         
         jd_txt = self.job_desc
-        
+        jd_txt = pd.Series(jd_txt)
+        jd_txt = hero.clean(jd_txt)
+        jd_txt = jd_txt[0]
         
         text_list = [text, jd_txt]
         cv = CountVectorizer()
@@ -177,16 +180,19 @@ class document_processing:
         
         # Details
         columns = ['filename', 'name', 'mobile_number', 'email', 'company_names',
-                   'college_name', 'experience', 'skills',
+                   'college_name', 'experience', 'skills', 'experience_age',
                    'primary_score', 'primary_match',
                    'secondary_score', 'secondary_match',
-                   'education_score', 'experience_score', 
-                   'resume_pages', 'document_similarity']
+                   'education_score', 
+                   'no_of_pages', 'document_similarity']
         details = pd.DataFrame(columns = columns)
         
         # Add the primary match and score
         pri_score, pri_match = self.find_match(main_df, skills[['Primary']])
         sec_score, sec_match = self.find_match(main_df, skills[['Secondary']])
+        
+        # Add the document similarity score
+        doc_sim = self.resume_cosine_score(cleaned_words[0])
         
         # Add details in a dataframe
         details.loc[0, 'filename'] = self.resume
@@ -202,6 +208,12 @@ class document_processing:
         details.loc[0, 'primary_match'] = str(pri_match)
         details.loc[0, 'secondary_score'] = sec_score
         details.loc[0, 'secondary_match'] = str(sec_match)
+        details.loc[0, 'document_similarity'] = int(doc_sim)
+        
+        if pyres_data['total_experience'] > 0:
+            details.loc[0, 'experience_age'] = pyres_data['total_experience']
+        else:
+            details.loc[0, 'experience_age'] = np.NaN
         
         return details
         
