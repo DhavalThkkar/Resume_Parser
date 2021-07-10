@@ -9,6 +9,7 @@ import pandas as pd
 import pytesseract
 import os
 import glob
+import nltk
 
 from pyresparser import ResumeParser
 from pyresparser.utils import extract_text
@@ -23,6 +24,8 @@ poppler_path=r'C:\Users\MSI\Downloads\Release-21.03.0\poppler-21.03.0\Library\bi
 class document_processing:
     
     def __init__(self, resume, skills):
+        
+        skills = pd.read_csv('skills.csv')
         
         self.resume = resume
         self.skills = skills
@@ -42,7 +45,7 @@ class document_processing:
         
     def ocr_text(self):
         
-        filepath = self.filepath
+        filepath = self.resume
     
         files = glob.glob('temp/*')
         for f in files:
@@ -92,3 +95,70 @@ class document_processing:
         
         return text_op, count
     
+    def find_unigram(df, column):
+        
+        unigrams  = (df[column].str.lower()
+                    .str.replace(r'[^a-z\s]', '')
+                    .str.split(expand=True)
+                    .stack()).reset_index(drop=True)
+        
+        unigrams = hero.clean(unigrams)
+        un_df = pd.DataFrame(unigrams, columns = ['text'])
+        
+        return un_df
+    
+    def find_match(source, match):
+        
+        # Remove the null values 
+        match.dropna(inplace=True)
+        match.reset_index(drop=True)
+        match.columns = ['text']
+        match['text'] = hero.clean(match['text'])
+        
+        # Find the max val
+        max_val = len(match)
+        
+        # Find the skills that match with the resume
+        df = pd.merge(source, match, on = 'text')
+        df.drop_duplicates(inplace=True)
+        df.reset_index(drop=True)
+        
+        # Skills matching
+        match_skills = len(df)
+        
+        if match_skills == 0:
+            lst_skills = []
+            score = 0
+        elif match_skills > 0:
+            lst_skills = df['text'].tolist()
+            score = int((match_skills / max_val) * 100)
+        
+        return score, lst_skills
+    
+    def skills_match(self):
+        
+        # Load the skills data file
+        skills = self.skills
+
+        # Load data from ocr
+        ocr_str, pages = self.ocr_text()
+        ocr_ser = pd.Series(ocr_str)
+        cleaned_words = hero.clean(ocr_ser)
+        
+        # Main dataframe for manipulation
+        main_df = pd.DataFrame(cleaned_words[0].split(), columns = ['text'])
+        
+        # Details
+        columns = ['filename', 'name', 'phone', 'email', 'companies',
+                   'colleges', 'experience', 'skills',
+                   'primary_score', 'primary_match',
+                   'secondary_score', 'secondary_match',
+                   'education_score', 'experience_score', 
+                   'other_skills_match', 'document_similarity']
+        details = pd.DataFrame(columns = columns)
+        
+        # Add the primary match and score
+        pri_score, pri_match = find_match(main_df, skills[['Primary']])
+        sec_score, sec_match = find_match(main_df, skills[['Secondary']])
+        
+        
