@@ -212,7 +212,11 @@ class document_processing:
         details = self.fill_data(details, pyres_data, 'experience')
         details = self.fill_data(details, pyres_data, 'skills')
         details.loc[0, 'words'] = words
-        details = self.fill_data(details, pyres_data, 'no_of_pages')
+        
+        if pyres_data['no_of_pages'] == None:
+            details.loc[0, 'no_of_pages'] = 0
+        else:
+            details = self.fill_data(details, pyres_data, 'no_of_pages')
         details.loc[0, 'primary_score'] = pri_score
         details.loc[0, 'primary_match'] = str(pri_match)
         details.loc[0, 'secondary_score'] = sec_score
