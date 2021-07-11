@@ -157,33 +157,40 @@ class document_processing:
         text_list = [text, jd_txt]
         cv = CountVectorizer()
         count_matrix = cv.fit_transform(text_list)
-        match_percentage = cosine_similarity(count_matrix)[0][1] * 100
+        match_percentage = cosine_similarity(count_matrix)[0][1] * 80
         match_percentage = round(match_percentage, 2)
 
         return match_percentage
+        
     
     def skills_match(self):
         
         # Load the skills data file
         skills = self.skills
-
+        
+        # Load data from pyresparser
+        pyres_data, pyres_text = self.extract_resume()
+        self.data = pyres_data
+        self.text = pyres_text
+        
         # Load data from ocr
-        ocr_str, pages = self.ocr_text()
-        ocr_ser = pd.Series(ocr_str)
+        #ocr_str, pages = self.ocr_text()
+        ocr_ser = pd.Series(pyres_text)
         cleaned_words = hero.clean(ocr_ser)
         
         # Main dataframe for manipulation
         main_df = pd.DataFrame(cleaned_words[0].split(), columns = ['text'])
+        self.clean_data = main_df
         
-        # Load data from pyresparser
-        pyres_data, pyres_text = self.extract_resume()
+        # Num of words
+        words = len(main_df)
         
         # Details
         columns = ['filename', 'name', 'mobile_number', 'email', 'company_names',
                    'college_name', 'experience', 'skills', 'experience_age',
+                   'degree', 'words',
                    'primary_score', 'primary_match',
                    'secondary_score', 'secondary_match',
-                   'education_score', 
                    'no_of_pages', 'document_similarity']
         details = pd.DataFrame(columns = columns)
         
@@ -201,8 +208,10 @@ class document_processing:
         details = self.fill_data(details, pyres_data, 'email')
         details = self.fill_data(details, pyres_data, 'company_names')
         details = self.fill_data(details, pyres_data, 'college_name')
+        details = self.fill_data(details, pyres_data, 'degree')
         details = self.fill_data(details, pyres_data, 'experience')
         details = self.fill_data(details, pyres_data, 'skills')
+        details.loc[0, 'words'] = words
         details = self.fill_data(details, pyres_data, 'no_of_pages')
         details.loc[0, 'primary_score'] = pri_score
         details.loc[0, 'primary_match'] = str(pri_match)
@@ -214,6 +223,8 @@ class document_processing:
             details.loc[0, 'experience_age'] = pyres_data['total_experience']
         else:
             details.loc[0, 'experience_age'] = np.NaN
+        
+        details['no_of_pages'] = details['no_of_pages'].astype(int)
         
         return details
         
