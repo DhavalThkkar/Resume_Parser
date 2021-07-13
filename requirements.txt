@@ -1,0 +1,11 @@
+tqdm==4.61.2
+pdf2image==1.16.0
+pandas==1.3.0
+pyresparser==1.0.6
+pytesseract==0.3.8
+texthero==1.1.0
+numpy==1.21.0
+requests==2.25.1
+cleantext==1.1.3
+Pillow==8.3.1
+scikit_learn==0.24.2

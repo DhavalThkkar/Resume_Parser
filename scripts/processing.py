@@ -21,16 +21,12 @@ from pdf2image import convert_from_path
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# System path variables
-pytesseract.pytesseract.tesseract_cmd=r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-poppler_path=r'C:\Users\MSI\Downloads\Release-21.03.0\poppler-21.03.0\Library\bin'
-
 class document_processing:
     
     def __init__(self, resume, skills, job_desc):
         
         skills = pd.read_csv('skills.csv')
-        with open('Job_description.txt', 'r') as file:
+        with open('Job_description.txt', 'rb') as file:
             job_desc = file.read()
         
         self.resume = resume
