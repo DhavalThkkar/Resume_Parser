@@ -3,13 +3,13 @@ LABEL Author, Dhaval Thakkar
 
 RUN apt-get update && apt-get install -y git
 
-RUN git clone https://github.com/DhavalThkkar/Resume_Parser.git
-
-ENV APP_HOME /root/Resume_Parser
+ENV APP_HOME /root/home
 WORKDIR $APP_HOME
+
+RUN git clone https://github.com/DhavalThkkar/Resume_Parser.git
 
 RUN conda install pip -y
 RUN conda update --all -y
-RUN pip install -r requirements.txt
+RUN pip install -r Resume_Parser/requirements.txt
 
 CMD ["/bin/bash"]

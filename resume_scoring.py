@@ -11,6 +11,9 @@ import os
 from scripts.processing import document_processing
 from tqdm import tqdm
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def document_score(df):
     
     # Page score
@@ -34,22 +37,27 @@ def document_score(df):
     
     return df
 
-resume_dir = 'sample/'
-skills_file = 'skills.csv'
-jd_file = 'Job_description.txt'
-list_of_resumes = os.listdir(resume_dir)
+if __name__=='__main__':
 
-df = pd.DataFrame()
-for file in tqdm(list_of_resumes):
-    result = document_processing(resume_dir+file, skills_file, jd_file)
-    candidate = result.skills_match()
-    df = pd.concat([df, candidate], ignore_index=True)
-
-df = document_score(df)
+    resume_dir = 'sample/'
+    skills_file = 'skills.csv'
+    jd_file = 'Job_description.txt'
+    list_of_resumes = os.listdir(resume_dir)
     
-# Final score
-df['Score'] = df['primary_score'] + df['secondary_score'] + df['document_score'] + df['document_similarity']
-
-# Sort by the score
-df = df.sort_values('Score', ascending=False)
-df = df.reset_index(drop=True)
+    df = pd.DataFrame()
+    for file in tqdm(list_of_resumes):
+        result = document_processing(resume_dir+file, skills_file, jd_file)
+        candidate = result.skills_match()
+        df = pd.concat([df, candidate], ignore_index=True)
+    
+    df = document_score(df)
+        
+    # Final score
+    df['Score'] = df['primary_score'] + df['secondary_score'] + df['document_score'] + df['document_similarity']
+    
+    # Sort by the score
+    df = df.sort_values('Score', ascending=False)
+    df = df.reset_index(drop=True)
+    
+    # Save the dataframe with the relevant details
+    df.to_csv('Candidates_score.csv', index=False)

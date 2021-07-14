@@ -54,7 +54,7 @@ class document_processing:
             os.remove(f)
         
         # Store all the pages of the PDF in a variable
-        pages = convert_from_path(filepath, 500, poppler_path = poppler_path)
+        pages = convert_from_path(filepath, 500)
           
         # Counter to store images of each page of PDF to image
         image_counter = 1
